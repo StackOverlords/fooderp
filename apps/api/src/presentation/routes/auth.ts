@@ -149,6 +149,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     },
   )
 
+
   // GET /auth/me — perfil del usuario autenticado
   fastify.get(
     '/me',
