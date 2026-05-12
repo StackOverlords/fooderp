@@ -29,10 +29,10 @@ export function createCreateSupplyWastageUseCase({ supplyWastageRepository, supp
       throw Errors.badRequest(`Motivo inválido. Válidos: ${VALID_REASONS.join(', ')}`)
     }
     if (input.quantity <= 0) {
-      throw Errors.badRequest('La cantidad debe ser mayor a 0')
+      throw Errors.badRequest('Quantity must be greater than 0')
     }
     if (input.reason === 'OTHER' && !input.notes) {
-      throw Errors.badRequest('Se requiere una nota cuando el motivo es "otro"')
+      throw Errors.badRequest('A note is required when reason is other')
     }
 
     return supplyWastageRepository.create({

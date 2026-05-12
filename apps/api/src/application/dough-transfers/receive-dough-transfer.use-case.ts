@@ -20,13 +20,13 @@ export function createReceiveDoughTransferUseCase({ doughTransferRepository }: D
     if (!transfer) throw Errors.notFound(`Envío '${input.transferId}' no encontrado`)
 
     if (transfer.toBranchId !== input.receivingBranchId) {
-      throw Errors.forbidden('Solo la sucursal destino puede confirmar la recepción')
+      throw Errors.forbidden('Only the destination branch can confirm receipt')
     }
     if (transfer.status !== DoughTransferStatus.IN_TRANSIT) {
-      throw Errors.badRequest('El envío ya fue recibido o no está en tránsito')
+      throw Errors.badRequest('Transfer has already been received or is not in transit')
     }
     if (!input.items || input.items.length === 0) {
-      throw Errors.badRequest('Debe confirmar al menos un tipo de masa')
+      throw Errors.badRequest('Must confirm at least one dough type')
     }
 
     const hasDifference = input.items.some(inputItem => {
@@ -35,7 +35,7 @@ export function createReceiveDoughTransferUseCase({ doughTransferRepository }: D
     })
 
     if (hasDifference && !input.notes) {
-      throw Errors.badRequest('Se requiere una observación cuando hay diferencia entre lo enviado y lo recibido')
+      throw Errors.badRequest('An observation is required when sent and received quantities differ')
     }
 
     const receiveItems: ReceiveItemData[] = input.items.map(i => ({

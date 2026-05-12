@@ -20,10 +20,10 @@ interface CreateDoughTransferInput {
 export function createCreateSupplyTransferUseCase({ supplyTransferRepository, supplyTypeRepository }: Dependencies) {
   return async function createSupplyTransfer(input: CreateDoughTransferInput): Promise<SupplyTransferWithItems> {
     if (input.fromBranchId === input.toBranchId) {
-      throw Errors.badRequest('La sucursal destino debe ser diferente a la sucursal origen')
+      throw Errors.badRequest('Destination branch must differ from origin branch')
     }
     if (!input.items || input.items.length === 0) {
-      throw Errors.badRequest('Debe incluir al menos un tipo de masa')
+      throw Errors.badRequest('Must include at least one dough type')
     }
 
     const activeTypes = await supplyTypeRepository.listActive()
@@ -34,7 +34,7 @@ export function createCreateSupplyTransferUseCase({ supplyTransferRepository, su
         throw Errors.badRequest(`Tipo de insumo inválido: "${item.supplyType}"`)
       }
       if (item.quantitySent <= 0) {
-        throw Errors.badRequest('La cantidad enviada debe ser mayor a 0')
+        throw Errors.badRequest('Sent quantity must be greater than 0')
       }
     }
 

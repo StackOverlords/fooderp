@@ -40,7 +40,7 @@ export function createApplyDiscountUseCase({ orderRepository, discountRepository
     }
 
     if (input.value <= 0) {
-      throw Errors.badRequest('El valor del descuento debe ser mayor a 0')
+      throw Errors.badRequest('Discount value must be greater than 0')
     }
 
     if (pinRateLimiter.isBlocked(input.tenantId, input.adminUsername)) {
@@ -50,31 +50,31 @@ export function createApplyDiscountUseCase({ orderRepository, discountRepository
 
     const admin = await userRepository.findByUsername(input.adminUsername, input.tenantId)
     if (!admin || admin.role !== UserRole.ADMIN) {
-      throw Errors.badRequest('Administrador no encontrado')
+      throw Errors.badRequest('Admin not found')
     }
 
     if (!admin.pinHash) {
-      throw Errors.badRequest('El administrador no tiene PIN configurado')
+      throw Errors.badRequest('Admin has no PIN configured')
     }
 
     const valid = await bcryptService.compare(input.adminPin, admin.pinHash)
     if (!valid) {
       pinRateLimiter.recordFailure(input.tenantId, input.adminUsername)
-      throw Errors.unauthorized('PIN de administrador incorrecto')
+      throw Errors.unauthorized('Incorrect admin PIN')
     }
 
     pinRateLimiter.reset(input.tenantId, input.adminUsername)
 
     let amount: number
     if (input.type === 'PERCENTAGE') {
-      if (input.value > 100) throw Errors.badRequest('El porcentaje no puede superar el 100%')
+      if (input.value > 100) throw Errors.badRequest('Percentage cannot exceed 100%')
       amount = parseFloat((order.subtotal * input.value / 100).toFixed(2))
     } else {
       amount = input.value
     }
 
     if (order.total - amount < 0) {
-      throw Errors.badRequest('El descuento no puede superar el total del pedido')
+      throw Errors.badRequest('Discount cannot exceed order total')
     }
 
     const updatedOrder = await orderRepository.applyDiscount(input.orderId, amount)

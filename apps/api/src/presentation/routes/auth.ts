@@ -132,6 +132,24 @@ export async function authRoutes(fastify: FastifyInstance) {
     },
   )
 
+  // POST /auth/logout — invalidación client-side: el SDK borra los tokens locales
+  fastify.post(
+    '/logout',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Cerrar sesión',
+        security: [{ bearerAuth: [] }],
+        response: { 204: { type: 'null' } },
+      },
+      preHandler: [authenticate],
+    },
+    async (_request, reply) => {
+      return reply.code(204).send()
+    },
+  )
+
+
   // GET /auth/me — perfil del usuario autenticado
   fastify.get(
     '/me',

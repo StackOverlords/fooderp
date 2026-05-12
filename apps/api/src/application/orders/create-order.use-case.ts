@@ -24,18 +24,18 @@ export interface CreateOrderInput {
 export function createCreateOrderUseCase({ orderRepository, shiftRepository, dishRepository }: Dependencies) {
   return async function createOrder(input: CreateOrderInput): Promise<OrderWithItems> {
     if (input.items.length === 0) {
-      throw Errors.badRequest('El pedido debe tener al menos un ítem')
+      throw Errors.badRequest('Order must have at least one item')
     }
 
     for (const item of input.items) {
       if (item.quantity < 1) {
-        throw Errors.badRequest('La cantidad de cada ítem debe ser >= 1')
+        throw Errors.badRequest('Each item quantity must be >= 1')
       }
     }
 
     const shift = await shiftRepository.findOpenByUser(input.userId, input.branchId)
     if (!shift) {
-      throw Errors.conflict('No hay turno abierto para este cajero en esta sucursal')
+      throw Errors.conflict('No open shift for this cashier at this branch')
     }
 
     const resolvedItems = await Promise.all(

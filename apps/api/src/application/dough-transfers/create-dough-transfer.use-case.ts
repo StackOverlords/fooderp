@@ -18,14 +18,14 @@ interface CreateDoughTransferInput {
 export function createCreateDoughTransferUseCase({ doughTransferRepository }: Dependencies) {
   return async function createDoughTransfer(input: CreateDoughTransferInput): Promise<DoughTransferWithItems> {
     if (input.fromBranchId === input.toBranchId) {
-      throw Errors.badRequest('La sucursal destino debe ser diferente a la sucursal origen')
+      throw Errors.badRequest('Destination branch must differ from origin branch')
     }
     if (!input.items || input.items.length === 0) {
-      throw Errors.badRequest('Debe incluir al menos un tipo de masa')
+      throw Errors.badRequest('Must include at least one dough type')
     }
     for (const item of input.items) {
       if (item.quantitySent <= 0) {
-        throw Errors.badRequest('La cantidad enviada debe ser mayor a 0')
+        throw Errors.badRequest('Sent quantity must be greater than 0')
       }
     }
 

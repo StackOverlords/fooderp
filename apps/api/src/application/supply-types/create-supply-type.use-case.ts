@@ -12,7 +12,7 @@ interface CreateSupplyTypeInput {
 
 export function createCreateSupplyTypeUseCase({ supplyTypeRepository }: Dependencies) {
   return async function createSupplyType(input: CreateSupplyTypeInput): Promise<SupplyType> {
-    if (!input.name.trim()) throw Errors.badRequest('El nombre del tipo de insumo es requerido')
+    if (!input.name.trim()) throw Errors.badRequest('Supply type name is required')
 
     const existing = await supplyTypeRepository.findByName(input.name)
     if (existing) throw Errors.conflict(`Ya existe un tipo de insumo con el nombre "${input.name}"`)

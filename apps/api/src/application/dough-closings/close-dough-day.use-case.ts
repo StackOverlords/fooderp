@@ -24,8 +24,8 @@ export function createCloseDoughDayUseCase({ doughDayClosureRepository }: Depend
     if (!VALID_DOUGH_TYPES.includes(input.doughType)) {
       throw Errors.badRequest(`Tipo de masa inválido. Válidos: ${VALID_DOUGH_TYPES.join(', ')}`)
     }
-    if (input.soldCount < 0) throw Errors.badRequest('La cantidad vendida no puede ser negativa')
-    if (input.actualRemaining < 0) throw Errors.badRequest('El conteo físico no puede ser negativo')
+    if (input.soldCount < 0) throw Errors.badRequest('Sold quantity cannot be negative')
+    if (input.actualRemaining < 0) throw Errors.badRequest('Physical count cannot be negative')
 
     const closureDate = new Date(input.closureDate)
     const doughType = input.doughType as DoughType
@@ -44,7 +44,7 @@ export function createCloseDoughDayUseCase({ doughDayClosureRepository }: Depend
     const difference = input.actualRemaining - theoreticalRemaining
 
     if (difference !== 0 && !input.notes) {
-      throw Errors.badRequest('Se requiere una observación cuando hay diferencia entre el conteo físico y el teórico')
+      throw Errors.badRequest('An observation is required when physical and theoretical counts differ')
     }
 
     return doughDayClosureRepository.create({

@@ -24,8 +24,8 @@ export function createCloseSupplyDayUseCase({ supplyDayClosureRepository, supply
     if (!supplyType || !supplyType.active) {
       throw Errors.badRequest(`Tipo de insumo inválido: "${input.supplyType}"`)
     }
-    if (input.soldCount < 0) throw Errors.badRequest('La cantidad vendida no puede ser negativa')
-    if (input.actualRemaining < 0) throw Errors.badRequest('El conteo físico no puede ser negativo')
+    if (input.soldCount < 0) throw Errors.badRequest('Sold quantity cannot be negative')
+    if (input.actualRemaining < 0) throw Errors.badRequest('Physical count cannot be negative')
 
     const closureDate = new Date(input.closureDate)
 
@@ -42,7 +42,7 @@ export function createCloseSupplyDayUseCase({ supplyDayClosureRepository, supply
     const difference = input.actualRemaining - theoreticalRemaining
 
     if (difference !== 0 && !input.notes) {
-      throw Errors.badRequest('Se requiere una observación cuando hay diferencia entre el conteo físico y el teórico')
+      throw Errors.badRequest('An observation is required when physical and theoretical counts differ')
     }
 
     return supplyDayClosureRepository.create({
