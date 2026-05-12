@@ -1,10 +1,12 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify'
 import { AppError } from './app-error'
+import { getLocale } from '../i18n/locale'
+import { translateMessage } from '../i18n/messages'
 
 interface ErrorResponse {
+  message: string
   error: {
     code: string
-    message: string
     statusCode: number
   }
 }
@@ -16,9 +18,12 @@ export function errorHandler(
 ): void {
   request.log.error({ err: error }, error.message)
 
+  const locale = getLocale(request)
+
   if (error instanceof AppError) {
     reply.status(error.statusCode).send({
-      error: { code: error.code, message: error.message, statusCode: error.statusCode },
+      message: translateMessage(error.message, locale),
+      error: { code: error.code, statusCode: error.statusCode },
     } satisfies ErrorResponse)
     return
   }
@@ -27,18 +32,20 @@ export function errorHandler(
 
   if (fastifyError.validation) {
     reply.status(400).send({
-      error: { code: 'VALIDATION_ERROR', message: error.message, statusCode: 400 },
+      message: translateMessage(error.message, locale),
+      error: { code: 'VALIDATION_ERROR', statusCode: 400 },
     } satisfies ErrorResponse)
     return
   }
 
   const statusCode = fastifyError.statusCode ?? 500
-  const message =
+  const rawMessage =
     process.env.NODE_ENV === 'production' && statusCode >= 500
       ? 'Internal server error'
       : error.message
 
   reply.status(statusCode).send({
-    error: { code: 'INTERNAL_ERROR', message, statusCode },
+    message: translateMessage(rawMessage, locale),
+    error: { code: 'INTERNAL_ERROR', statusCode },
   } satisfies ErrorResponse)
 }
