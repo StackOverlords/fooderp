@@ -13,7 +13,7 @@ export function createOpenShiftUseCase({ shiftRepository }: Dependencies) {
     }
     const existing = await shiftRepository.findOpenByUser(data.userId, data.branchId)
     if (existing) {
-      throw Errors.conflict('Ya existe un turno abierto para este cajero en esta sucursal')
+      throw Errors.conflict('An open shift already exists for this cashier at this branch')
     }
     return shiftRepository.open(data)
   }

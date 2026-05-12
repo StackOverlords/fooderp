@@ -9,8 +9,8 @@ interface Dependencies {
 export function createDeactivateSupplyTypeUseCase({ supplyTypeRepository }: Dependencies) {
   return async function deactivateSupplyType(id: string): Promise<SupplyType> {
     const current = await supplyTypeRepository.findById(id)
-    if (!current) throw Errors.notFound('Tipo de insumo no encontrado')
-    if (!current.active) throw Errors.conflict('El tipo de insumo ya está inactivo')
+    if (!current) throw Errors.notFound('Supply type not found')
+    if (!current.active) throw Errors.conflict('Supply type is already inactive')
     return supplyTypeRepository.deactivate(id)
   }
 }
