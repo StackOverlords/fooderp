@@ -45,17 +45,17 @@ export function createCancelOrderUseCase({ orderRepository, cancellationReposito
 
     const admin = await userRepository.findByUsername(input.adminUsername, input.tenantId)
     if (!admin || admin.role !== UserRole.ADMIN) {
-      throw Errors.badRequest('Administrador no encontrado')
+      throw Errors.badRequest('Admin not found')
     }
 
     if (!admin.pinHash) {
-      throw Errors.badRequest('El administrador no tiene PIN configurado')
+      throw Errors.badRequest('Admin has no PIN configured')
     }
 
     const valid = await bcryptService.compare(input.adminPin, admin.pinHash)
     if (!valid) {
       pinRateLimiter.recordFailure(input.tenantId, input.adminUsername)
-      throw Errors.unauthorized('PIN de administrador incorrecto')
+      throw Errors.unauthorized('Incorrect admin PIN')
     }
 
     pinRateLimiter.reset(input.tenantId, input.adminUsername)

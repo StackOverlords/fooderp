@@ -29,9 +29,9 @@ export function createCloseShiftUseCase({ shiftRepository, shiftClosureRepositor
     if (input.declaredQrCount < 0) throw Errors.badRequest('declaredQrCount must be >= 0')
 
     const openShift = await shiftRepository.findOpenByUser(input.userId, input.branchId)
-    if (!openShift) throw Errors.conflict('No hay turno abierto para cerrar')
+    if (!openShift) throw Errors.conflict('No open shift to close')
     if (openShift.status !== ShiftStatus.OPEN) {
-      throw Errors.conflict('El turno ya está cerrado')
+      throw Errors.conflict('Shift is already closed')
     }
 
     // Calculate expected totals from DB — happens AFTER receiving declared values (cierre ciego)
@@ -45,7 +45,7 @@ export function createCloseShiftUseCase({ shiftRepository, shiftClosureRepositor
 
     const hasDifference = cashDifference !== 0 || qrCountDifference !== 0
     if (hasDifference && !input.notes?.trim()) {
-      throw Errors.badRequest('Se requiere una observación cuando hay diferencia en el cuadre')
+      throw Errors.badRequest('An observation is required when there is a balance discrepancy')
     }
 
     const shift = await shiftRepository.close(openShift.id)
