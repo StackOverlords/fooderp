@@ -16,7 +16,6 @@ import type {
   FilterDef,
   FilterOption,
   TextFilterDef,
-  SelectFilterDef,
   AsyncSelectFilterDef,
   BooleanFilterDef,
   DateRangeFilterDef,
