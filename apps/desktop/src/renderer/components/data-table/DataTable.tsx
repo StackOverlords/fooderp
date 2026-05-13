@@ -1,7 +1,6 @@
 import { useState, useEffect, Fragment } from 'react'
 import {
   DndContext,
-  type DragEndEvent,
   type DragOverEvent,
   PointerSensor,
   useSensor,
