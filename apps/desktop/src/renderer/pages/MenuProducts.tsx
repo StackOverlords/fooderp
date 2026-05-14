@@ -2,14 +2,18 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { eventBus } from '@/core/events/event-bus'
 import { useAuthStore } from '@/core/auth/store'
+import { confirm } from '@/core/confirm'
+import { notify } from '@/core/notify'
+import { extractApiMessage } from '@/core/http/error'
 import { DishTable } from '@/features/menu/components/DishTable'
 import { DishFormDialog } from '@/features/menu/components/DishFormDialog'
 import { CloneDishDialog } from '@/features/menu/components/CloneDishDialog'
-import { DeactivateDishDialog } from '@/features/menu/components/DeactivateDishDialog'
+import { useDeactivateDish } from '@/features/menu/api'
 import type { Dish } from '@/features/menu/schemas'
 
 export default function MenuProductsPage() {
   const isAdmin = useAuthStore((s) => s.hasRole('ADMIN'))
+  const deactivateMutation = useDeactivateDish()
 
   const [dishFormOpen, setDishFormOpen] = useState(false)
   const [dishFormMode, setDishFormMode] = useState<'create' | 'edit'>('create')
@@ -17,9 +21,6 @@ export default function MenuProductsPage() {
 
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false)
   const [cloneTargetDish, setCloneTargetDish] = useState<Dish | null>(null)
-
-  const [deactivateDishOpen, setDeactivateDishOpen] = useState(false)
-  const [deactivateTargetDish, setDeactivateTargetDish] = useState<Dish | null>(null)
 
   useEffect(() => {
     const unsub = eventBus.on('menu.dishDialog.requested', ({ mode }) => {
@@ -41,9 +42,20 @@ export default function MenuProductsPage() {
     setCloneDialogOpen(true)
   }
 
-  function handleDeactivate(dish: Dish) {
-    setDeactivateTargetDish(dish)
-    setDeactivateDishOpen(true)
+  async function handleDeactivate(dish: Dish) {
+    const ok = await confirm({
+      title: 'Desactivar plato',
+      description: `¿Desactivar "${dish.name}"? Aparecerá como inactivo en el listado y dejará de mostrarse a los cajeros.`,
+      confirmLabel: 'Desactivar',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      await deactivateMutation.mutateAsync(dish.id)
+      notify('Plato desactivado correctamente', { type: 'success' })
+    } catch (err) {
+      notify(extractApiMessage(err), { type: 'error' })
+    }
   }
 
   function handleNewDish() {
@@ -63,11 +75,7 @@ export default function MenuProductsPage() {
         )}
       </div>
 
-      <DishTable
-        onEdit={handleEdit}
-        onClone={handleClone}
-        onDeactivate={handleDeactivate}
-      />
+      <DishTable onEdit={handleEdit} onClone={handleClone} onDeactivate={handleDeactivate} />
 
       <DishFormDialog
         open={dishFormOpen}
@@ -80,12 +88,6 @@ export default function MenuProductsPage() {
         open={cloneDialogOpen}
         onOpenChange={setCloneDialogOpen}
         dish={cloneTargetDish}
-      />
-
-      <DeactivateDishDialog
-        open={deactivateDishOpen}
-        onOpenChange={setDeactivateDishOpen}
-        dish={deactivateTargetDish}
       />
     </div>
   )

@@ -2,20 +2,21 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { eventBus } from '@/core/events/event-bus'
 import { useAuthStore } from '@/core/auth/store'
+import { confirm } from '@/core/confirm'
+import { notify } from '@/core/notify'
+import { extractApiMessage } from '@/core/http/error'
 import { CategoryTable } from '@/features/menu/components/CategoryTable'
 import { CategoryFormDialog } from '@/features/menu/components/CategoryFormDialog'
-import { DeactivateCategoryDialog } from '@/features/menu/components/DeactivateCategoryDialog'
+import { useDeactivateCategory } from '@/features/menu/api'
 import type { Category } from '@/features/menu/schemas'
 
 export default function MenuCategoriesPage() {
   const isAdmin = useAuthStore((s) => s.hasRole('ADMIN'))
+  const deactivateMutation = useDeactivateCategory()
 
   const [categoryFormOpen, setCategoryFormOpen] = useState(false)
   const [categoryFormMode, setCategoryFormMode] = useState<'create' | 'edit'>('create')
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
-
-  const [deactivateCategoryOpen, setDeactivateCategoryOpen] = useState(false)
-  const [deactivateTargetCategory, setDeactivateTargetCategory] = useState<Category | null>(null)
 
   useEffect(() => {
     const unsub = eventBus.on('menu.categoryDialog.requested', ({ mode }) => {
@@ -32,9 +33,20 @@ export default function MenuCategoriesPage() {
     setCategoryFormOpen(true)
   }
 
-  function handleDeactivate(category: Category) {
-    setDeactivateTargetCategory(category)
-    setDeactivateCategoryOpen(true)
+  async function handleDeactivate(category: Category) {
+    const ok = await confirm({
+      title: 'Desactivar categoría',
+      description: `¿Desactivar "${category.name}"? Aparecerá como inactiva en el listado.`,
+      confirmLabel: 'Desactivar',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      await deactivateMutation.mutateAsync(category.id)
+      notify('Categoría desactivada correctamente', { type: 'success' })
+    } catch (err) {
+      notify(extractApiMessage(err), { type: 'error' })
+    }
   }
 
   function handleNewCategory() {
@@ -54,22 +66,13 @@ export default function MenuCategoriesPage() {
         )}
       </div>
 
-      <CategoryTable
-        onEdit={handleEdit}
-        onDeactivate={handleDeactivate}
-      />
+      <CategoryTable onEdit={handleEdit} onDeactivate={handleDeactivate} />
 
       <CategoryFormDialog
         open={categoryFormOpen}
         onOpenChange={setCategoryFormOpen}
         mode={categoryFormMode}
         category={selectedCategory}
-      />
-
-      <DeactivateCategoryDialog
-        open={deactivateCategoryOpen}
-        onOpenChange={setDeactivateCategoryOpen}
-        category={deactivateTargetCategory}
       />
     </div>
   )
