@@ -4,7 +4,6 @@ import { queryKeys } from '@/core/http/query-keys'
 import { useAuthStore } from '@/core/auth/store'
 import { eventBus } from '@/core/events/event-bus'
 import {
-  orderHeaderSchema,
   orderWithItemsSchema,
   orderListPageSchema,
   dishSchema,
