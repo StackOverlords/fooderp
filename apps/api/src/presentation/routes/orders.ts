@@ -262,7 +262,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
         const orderRepo = new PrismaOrderRepository(db, schema)
         const listOrders = createListOrdersUseCase({ orderRepository: orderRepo })
         return listOrders({
-          branchId: effectiveBranchId,
+          branchId: effectiveBranchId ?? undefined,
           shiftId:   request.query.shiftId,
           status:    request.query.status,
           userId:    effectiveUserId,

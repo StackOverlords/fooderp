@@ -22,7 +22,7 @@ export default function MenuProductsPage() {
   const [deactivateTargetDish, setDeactivateTargetDish] = useState<Dish | null>(null)
 
   useEffect(() => {
-    const unsub = eventBus.on('menu.dishDialog.requested', ({ mode, dishId: _dishId }) => {
+    const unsub = eventBus.on('menu.dishDialog.requested', ({ mode }) => {
       setDishFormMode(mode)
       setSelectedDish(null)
       setDishFormOpen(true)
