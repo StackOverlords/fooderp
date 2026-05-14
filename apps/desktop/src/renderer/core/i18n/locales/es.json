@@ -31,6 +31,12 @@
       "closeShift":  "Turnos: Cerrar turno",
       "viewCurrent": "Turnos: Mi turno",
       "viewHistory": "Turnos: Ver historial"
+    },
+    "menu": {
+      "viewProducts":    "Menú: Productos",
+      "viewCategories":  "Menú: Categorías",
+      "createDish":      "Menú: Nuevo plato",
+      "createCategory":  "Menú: Nueva categoría"
     }
   },
   "app": {
