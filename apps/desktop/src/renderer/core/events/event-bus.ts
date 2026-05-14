@@ -46,13 +46,32 @@ export type AppEvents = {
   'titlebar.menubar.toggled':  { visible: boolean }
   'titlebar.tabbar.toggled':   { visible: boolean }
 
-  // Órdenes (placeholder — expandir cuando se cree el módulo)
-  'order.created':             { orderId: string }
-  'order.status.changed':      { orderId: string; status: string }
+  // Órdenes
+  'order.created':                  { orderId: string; orderNumber: number }
+  'order.status.changed':           { orderId: string; status: string }
+  'order.detailSheet.requested':    { orderId: string }
+  'order.payDialog.requested':      { orderId: string }
+  'order.cancelDialog.requested':   { orderId: string }
+  'order.discountDialog.requested': { orderId: string }
 
   // Turnos
   'shifts.openDialog.requested':  undefined
   'shifts.closeDialog.requested': undefined
+
+  // Menú — platos
+  'menu.dish.created':    { dishId: string; name: string }
+  'menu.dish.updated':    { dishId: string }
+  'menu.dish.deactivated': { dishId: string }
+  'menu.dish.cloned':     { dishId: string; name: string }
+
+  // Menú — categorías
+  'menu.category.created':    { categoryId: string; name: string }
+  'menu.category.updated':    { categoryId: string }
+  'menu.category.deactivated': { categoryId: string }
+
+  // Menú — diálogos (desde comandos)
+  'menu.dishDialog.requested':     { mode: 'create' | 'edit'; dishId?: string }
+  'menu.categoryDialog.requested': { mode: 'create' | 'edit'; categoryId?: string }
 }
 
 export const eventBus = new EventBusClass<AppEvents>()
