@@ -133,6 +133,8 @@ src/
     │   ├── commands/   # CommandRegistry
     │   ├── http/       # Axios client + query-keys factory
     │   ├── auth/       # Auth store + usePermissions
+    │   ├── confirm/    # confirm() — diálogos de confirmación imperativos
+    │   ├── notify/     # notify() — toasts
     │   └── routing/    # RouteConfig type + guards
     ├── features/  # Módulos de negocio (orders, menu, staff…)
     │   └── orders/
@@ -141,7 +143,9 @@ src/
     │       ├── store.ts      # Zustand (solo si hay estado local del módulo)
     │       └── components/
     ├── components/    # Componentes globales reutilizables
-    │   └── ui/        # shadcn — NO modificar
+    │   ├── ui/            # shadcn — NO modificar
+    │   ├── data-table/    # DataTable declarativo: defineColumns, defineFilters, FilterBar
+    │   └── schema-form/   # Formularios declarativos: FormDialog, defineFields, SchemaForm
     ├── pages/         # Una página por ruta
     ├── config/
     │   └── routes.tsx # Fuente única de verdad de rutas
@@ -201,6 +205,84 @@ queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
 // ❌ Nunca
 useQuery({ queryKey: ['orders', 'list'] })
 ```
+
+---
+
+## Formularios CRUD — schema-form
+
+Para formularios CRUD usar el sistema declarativo en `components/schema-form/`. **No usar `useForm` + `Controller` + JSX manualmente** en dialogs nuevos.
+
+```ts
+import { FormDialog, defineFields, FORM_NONE } from '@/components/schema-form'
+
+const fields = defineFields<MyFormInput>([
+  { id: 'name',     type: 'text',   label: 'Nombre', required: true, autoFocus: true },
+  { id: 'price',    type: 'number', label: 'Precio', required: true, min: 0, step: 0.01 },
+  { id: 'categoryId', type: 'select', label: 'Categoría',
+    options: categoryOptions, loading: isLoading, nullable: true, nullLabel: 'Sin categoría' },
+  { id: 'notes',    type: 'textarea', label: 'Notas', rows: 3 },
+  { id: 'from',     type: 'time',   label: 'Desde', span: 1 },  // mitad del ancho
+  { id: 'to',       type: 'time',   label: 'Hasta', span: 1 },  // mitad del ancho
+  { id: 'active',   type: 'switch', label: 'Activo' },
+  { id: 'password', type: 'password', label: 'Contraseña', hidden: mode !== 'create' },
+])
+
+<FormDialog<MyFormInput>
+  open={open} onOpenChange={onOpenChange}
+  title="Nuevo elemento"
+  fields={fields}
+  schema={myFormSchema}
+  defaultValues={{ name: '', categoryId: FORM_NONE }}   // create
+  values={entity ? { name: entity.name, ... } : undefined}  // edit (reactivo)
+  onSubmit={handleSubmit}
+  isPending={mutation.isPending}
+  submitLabel="Crear"
+  maxWidth="md"   // sm | md | lg
+/>
+```
+
+**Field types disponibles:** `text` · `number` · `password` · `url` · `time` · `textarea` · `select` · `switch`
+
+**Layout:** el form usa un grid de `cols` columnas (default 2). Cada campo tiene `span` (default = `cols`, full width). `span: 1` en grid de 2 cols = mitad del ancho.
+
+**Select nullable:** usar `nullable: true` + `nullLabel`. El sentinel `FORM_NONE = '__none__'` se pasa cuando no hay selección. Convertir en `onSubmit`:
+```ts
+categoryId: data.categoryId === FORM_NONE ? null : data.categoryId
+```
+
+**Create vs edit con schemas distintos:** usar dos bloques `if (mode === 'create') return <FormDialog<CreateInput> ...>` tipados por separado — no castear.
+
+**NO usar schema-form cuando:** hay RadioGroup, campos con label dinámico según `watch`, componentes custom (AdminPinChallenge), o success phase post-submit. Esos quedan como formularios manuales.
+
+---
+
+## Confirmaciones destructivas — confirm()
+
+Para acciones destructivas (eliminar, desactivar) usar `confirm()` de `@/core/confirm` directamente en el handler del page — **nunca crear un componente dialog de confirmación separado**.
+
+```ts
+import { confirm } from '@/core/confirm'
+import { notify } from '@/core/notify'
+import { extractApiMessage } from '@/core/http/error'
+
+async function handleDelete(entity: Entity) {
+  const ok = await confirm({
+    title: 'Eliminar elemento',
+    description: `¿Eliminar "${entity.name}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    variant: 'destructive',
+  })
+  if (!ok) return
+  try {
+    await deleteMutation.mutateAsync(entity.id)
+    notify('Elemento eliminado', { type: 'success' })
+  } catch (err) {
+    notify(extractApiMessage(err), { type: 'error' })
+  }
+}
+```
+
+`description` acepta `ReactNode` — se puede pasar JSX para warnings visuales (ej: advertencia en amber). La mutación vive en el page, no en un componente dialog.
 
 ---
 

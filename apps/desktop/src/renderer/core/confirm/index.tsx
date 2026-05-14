@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { create } from 'zustand'
 import { useTranslation } from 'react-i18next'
 import {
@@ -13,7 +14,7 @@ import {
 
 export interface ConfirmOptions {
   title?: string
-  description?: string
+  description?: ReactNode
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'default' | 'destructive'
@@ -61,7 +62,9 @@ export function ConfirmDialog() {
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {description && (
-            <AlertDialogDescription>{description}</AlertDialogDescription>
+            <AlertDialogDescription asChild>
+              <div>{description}</div>
+            </AlertDialogDescription>
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>

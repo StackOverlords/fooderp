@@ -2,21 +2,22 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { eventBus } from '@/core/events/event-bus'
 import { useAuthStore } from '@/core/auth/store'
+import { confirm } from '@/core/confirm'
+import { notify } from '@/core/notify'
+import { extractApiMessage } from '@/core/http/error'
 import { UserTable } from '@/features/staff/components/UserTable'
 import { UserFormDialog } from '@/features/staff/components/UserFormDialog'
-import { DeleteUserDialog } from '@/features/staff/components/DeleteUserDialog'
+import { useDeleteUser } from '@/features/staff/api'
 import type { User } from '@/features/staff/schemas'
 
 export default function StaffUsersPage() {
   const { t } = useTranslation()
   const isAdmin = useAuthStore((s) => s.hasRole('ADMIN'))
+  const deleteMutation = useDeleteUser()
 
   const [formOpen, setFormOpen] = useState(false)
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleteTargetUser, setDeleteTargetUser] = useState<User | null>(null)
 
   useEffect(() => {
     const unsub = eventBus.on('staff.userDialog.requested', ({ mode }) => {
@@ -33,9 +34,20 @@ export default function StaffUsersPage() {
     setFormOpen(true)
   }
 
-  function handleDelete(user: User) {
-    setDeleteTargetUser(user)
-    setDeleteOpen(true)
+  async function handleDelete(user: User) {
+    const ok = await confirm({
+      title: t('staff.users.delete.title'),
+      description: t('staff.users.delete.description', { username: user.username }),
+      confirmLabel: t('staff.users.delete.submit'),
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      await deleteMutation.mutateAsync(user.id)
+      notify(t('staff.users.toast.deleted'), { type: 'success' })
+    } catch (err) {
+      notify(extractApiMessage(err), { type: 'error' })
+    }
   }
 
   return (
@@ -45,10 +57,7 @@ export default function StaffUsersPage() {
       </div>
 
       {isAdmin && (
-        <UserTable
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <UserTable onEdit={handleEdit} onDelete={handleDelete} />
       )}
 
       <UserFormDialog
@@ -56,12 +65,6 @@ export default function StaffUsersPage() {
         onOpenChange={setFormOpen}
         mode={formMode}
         user={selectedUser}
-      />
-
-      <DeleteUserDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        user={deleteTargetUser}
       />
     </div>
   )
