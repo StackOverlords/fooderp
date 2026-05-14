@@ -95,9 +95,8 @@ export function usePayOrder() {
       const { data } = await api.patch<unknown>(`/api/v1/orders/${id}/pay`, input)
       return payOrderResponseSchema.parse(data)
     },
-    onSuccess: async (response, { id }) => {
+    onSuccess: async (_response, { id }) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
-      queryClient.setQueryData(queryKeys.orders.detail(id), response.order)
       eventBus.emit('order.status.changed', { orderId: id, status: 'PAID' })
     },
   })
@@ -124,9 +123,8 @@ export function useApplyDiscount() {
       const { data } = await api.patch<unknown>(`/api/v1/orders/${id}/discount`, input)
       return applyDiscountResponseSchema.parse(data)
     },
-    onSuccess: async (response, { id }) => {
+    onSuccess: async (_response, { id }) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
-      queryClient.setQueryData(queryKeys.orders.detail(id), response.order)
       eventBus.emit('order.status.changed', { orderId: id, status: 'PENDING' })
     },
   })

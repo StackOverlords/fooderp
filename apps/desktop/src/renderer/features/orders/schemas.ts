@@ -131,37 +131,39 @@ export type ApplyDiscountInput = z.infer<typeof applyDiscountInputSchema>
 // ── Mutation response wrappers ─────────────────────────────────────────────────
 
 export const payOrderResponseSchema = z.object({
-  order:   orderWithItemsSchema,
+  order:   orderHeaderSchema,
   payment: z.object({
     id:        z.string(),
     method:    z.string(),
     amount:    z.number(),
     reference: z.string().nullable(),
-    createdAt: z.coerce.date(),
+    paidAt:    z.coerce.date(),
   }),
 })
 export type PayOrderResponse = z.infer<typeof payOrderResponseSchema>
 
 export const cancelOrderResponseSchema = z.object({
-  order:        orderWithItemsSchema,
+  order:        orderHeaderSchema,
   cancellation: z.object({
-    id:          z.string(),
-    reason:      z.string().nullable(),
-    cancelledBy: z.string(),
-    createdAt:   z.coerce.date(),
+    id:           z.string(),
+    orderId:      z.string(),
+    adminUserId:  z.string(),
+    cajeroUserId: z.string(),
+    reason:       z.string().nullable(),
+    cancelledAt:  z.coerce.date(),
   }),
 })
 export type CancelOrderResponse = z.infer<typeof cancelOrderResponseSchema>
 
 export const applyDiscountResponseSchema = z.object({
-  order:    orderWithItemsSchema,
+  order:    orderHeaderSchema,
   discount: z.object({
-    id:            z.string(),
-    type:          z.string(),
-    value:         z.number(),
-    amountApplied: z.number(),
-    reason:        z.string().nullable(),
-    createdAt:     z.coerce.date(),
+    id:          z.string(),
+    type:        z.string(),
+    value:       z.number(),
+    amount:      z.number(),
+    reason:      z.string().nullable(),
+    appliedAt:   z.coerce.date(),
   }),
 })
 export type ApplyDiscountResponse = z.infer<typeof applyDiscountResponseSchema>
