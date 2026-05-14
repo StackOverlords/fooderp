@@ -429,12 +429,12 @@ describe('PATCH /api/v1/orders/:id/cancel', () => {
     expect(res.statusCode).toBe(401)
   })
 
-  it('OR-18 — devuelve 400 si el admin no tiene PIN configurado', async () => {
-    // Crear otro admin sin PIN
-    const noPinAdmin = await prisma.user.upsert({
-      where: { username_tenantId: { username: 'admin-no-pin', tenantId } },
-      update: {},
-      create: { username: 'admin-no-pin', passwordHash: 'x', role: 'ADMIN', tenantId, branchId },
+  it('OR-18 — cancela sin PIN cuando require_pin_for_cancel está desactivado', async () => {
+    await server.inject({
+      method: 'PATCH',
+      url: '/api/v1/tenant-settings',
+      headers: authHeader(adminToken),
+      payload: { key: 'require_pin_for_cancel', value: false },
     })
 
     const newOrder = await server.inject({
@@ -449,9 +449,18 @@ describe('PATCH /api/v1/orders/:id/cancel', () => {
       method: 'PATCH',
       url: `/api/v1/orders/${id}/cancel`,
       headers: authHeader(cajeroToken),
-      payload: { adminUsername: noPinAdmin.username, adminPin: '1234' },
+      payload: {},
     })
-    expect(res.statusCode).toBe(400)
+    expect(res.statusCode).toBe(200)
+    expect(res.json().order.status).toBe('CANCELLED')
+
+    // Restaurar
+    await server.inject({
+      method: 'PATCH',
+      url: '/api/v1/tenant-settings',
+      headers: authHeader(adminToken),
+      payload: { key: 'require_pin_for_cancel', value: true },
+    })
   })
 
   it('OR-19 — devuelve 404 para pedido inexistente', async () => {
