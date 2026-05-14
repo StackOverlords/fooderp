@@ -18,7 +18,8 @@ import { DishPicker } from './DishPicker'
 export function CreateOrderForm() {
   const [apiError, setApiError] = useState<string | null>(null)
   const [selectedDishId, setSelectedDishId] = useState<string | null>(null)
-  const [builderQty, setBuilderQty] = useState(1)
+  const [builderQtyStr, setBuilderQtyStr] = useState('1')
+  const builderQty = Math.max(1, Number(builderQtyStr) || 1)
   const [builderNotes, setBuilderNotes] = useState('')
   const dishCache = useRef<Map<string, Dish>>(new Map())
   const mutation = useCreateOrder()
@@ -47,7 +48,7 @@ export function CreateOrderForm() {
     if (!selectedDishId) return
     append({ dishId: selectedDishId, quantity: builderQty, notes: builderNotes || undefined })
     setSelectedDishId(null)
-    setBuilderQty(1)
+    setBuilderQtyStr('1')
     setBuilderNotes('')
   }
 
@@ -64,7 +65,7 @@ export function CreateOrderForm() {
       reset()
       dishCache.current.clear()
       setSelectedDishId(null)
-      setBuilderQty(1)
+      setBuilderQtyStr('1')
       setBuilderNotes('')
       openRoute('orders-list')
     } catch (err) {
@@ -93,8 +94,9 @@ export function CreateOrderForm() {
               <Input
                 type="number"
                 min={1}
-                value={builderQty}
-                onChange={(e) => setBuilderQty(Math.max(1, Number(e.target.value)))}
+                value={builderQtyStr}
+                onChange={(e) => setBuilderQtyStr(e.target.value)}
+                onBlur={() => setBuilderQtyStr(String(builderQty))}
                 disabled={isSubmitting}
                 className="h-8 text-sm"
               />
