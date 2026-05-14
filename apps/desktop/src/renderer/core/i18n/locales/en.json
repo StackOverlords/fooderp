@@ -31,6 +31,12 @@
       "closeShift":  "Shifts: Close shift",
       "viewCurrent": "Shifts: My shift",
       "viewHistory": "Shifts: View history"
+    },
+    "menu": {
+      "viewProducts":    "Menu: Products",
+      "viewCategories":  "Menu: Categories",
+      "createDish":      "Menu: New dish",
+      "createCategory":  "Menu: New category"
     }
   },
   "app": {

@@ -18,6 +18,10 @@ import { RouteRegistry } from '@/core/routing/route-registry'
 const SetupPage = lazy(() => import('@/pages/Setup'))
 const ShiftsCurrentPage = lazy(() => import('@/pages/ShiftsCurrent'))
 const ShiftsHistoryPage = lazy(() => import('@/pages/ShiftsHistory'))
+const OrdersListPage = lazy(() => import('@/pages/OrdersList'))
+const OrdersNewPage = lazy(() => import('@/pages/OrdersNew'))
+const MenuProductsPage = lazy(() => import('@/pages/MenuProducts'))
+const MenuCategoriesPage = lazy(() => import('@/pages/MenuCategories'))
 
 const Placeholder = ({ label }: { label: string }) => (
   <div className="p-6 text-foreground text-sm text-muted-foreground">{label}</div>
@@ -50,7 +54,8 @@ export const routes: RouteConfig[] = [
         path: '/orders/list',
         label: 'Ver órdenes',
         icon: ClipboardList,
-        element: <Placeholder label="Lista de órdenes" />,
+        element: <OrdersListPage />,
+        component: OrdersListPage,
         order: 0,
         tabConfig: { singleton: true, closable: true },
       },
@@ -59,7 +64,8 @@ export const routes: RouteConfig[] = [
         path: '/orders/new',
         label: 'Nueva orden',
         icon: ShoppingCart,
-        element: <Placeholder label="Nueva orden" />,
+        element: <OrdersNewPage />,
+        component: OrdersNewPage,
         order: 1,
       },
     ],
@@ -76,17 +82,21 @@ export const routes: RouteConfig[] = [
         id: 'menu.products',
         path: '/menu/products',
         label: 'Productos',
-        element: <Placeholder label="Productos" />,
+        element: <MenuProductsPage />,
+        component: MenuProductsPage,
+        roles: ['ADMIN'],
         order: 0,
-        tabConfig: { singleton: true },
+        tabConfig: { singleton: true, closable: true },
       },
       {
         id: 'menu.categories',
         path: '/menu/categories',
         label: 'Categorías',
-        element: <Placeholder label="Categorías" />,
+        element: <MenuCategoriesPage />,
+        component: MenuCategoriesPage,
+        roles: ['ADMIN'],
         order: 1,
-        tabConfig: { singleton: true },
+        tabConfig: { singleton: true, closable: true },
       },
     ],
   },
